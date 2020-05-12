@@ -1,0 +1,49 @@
+library('googlesheets4')
+library('jsonlite')
+baseurl='http://politicsandwar.com/api/'
+baseurl2='https://politicsandwar.com/nation/id='
+
+#Insert API key and target alliance ID below
+apikey=KEY 
+id=ID
+
+AAurl=paste0(baseurl,"alliance/id=",id,"&key=",apikey)
+AAdata=fromJSON(AAurl)
+name=link=score=soldiers=tanks=planes=ships=status=rep(0,length(AAdata$member_id_list))
+attacker1=attacker2=attacker3=rep("NA",length(AAdata$member_id_list))
+low_range=high_range=rep(0,length(AAdata$member_id_list))
+code=AAdata$member_id_list
+
+for (i in 1:length(AAdata$member_id_list))
+{
+  nationurl=paste0(baseurl,"nation/id=",code[i],"/&key=",apikey)
+  nationdata=fromJSON(nationurl)
+  name[i]=nationdata$name
+  link[i]=paste0(baseurl2,nationdata$nationid)
+  score[i]=nationdata$score
+  soldiers[i]=nationdata$soldiers
+  tanks[i]=nationdata$tanks
+  planes[i]=nationdata$aircraft
+  ships[i]=nationdata$ships
+  low_range[i]=sapply(score[i],as.numeric)*(4/7)
+  high_range[i]=sapply(score[i],as.numeric)*(4/3)
+  if (nationdata$minutessinceactive<1440)
+  {
+    status[i]="Active"
+  }
+  else if (nationdata$minutessinceactive<4320)
+  {
+    status[i]="Inactive over a day"
+  }
+  else if (nationdata$minutessinceactive<10080)
+  {
+    status[i]="Inactive over 3 days"
+  }
+  else
+  {
+    status[i]="Completely Inactive"
+  }
+}
+
+dataframe=data.frame(name,link,score,soldiers,tanks,planes,ships,status,low_range,high_range,attacker1,attacker2,attacker3)
+gs4_create(AAdata$name,sheets=dataframe)
