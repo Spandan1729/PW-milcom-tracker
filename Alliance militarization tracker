@@ -1,0 +1,76 @@
+library('googlesheets4')
+library('jsonlite')
+baseurl='http://politicsandwar.com/api/'
+baseurl2='https://politicsandwar.com/nation/id='
+
+#Insert API key and self alliance ID below
+apikey="API"
+id=ID
+
+Barracks=Factories=Hangars=5
+Shipyards=3
+AAurl=paste0(baseurl,"alliance/id=",id,"&key=",apikey)
+AAdata=fromJSON(AAurl)
+Name=Link=Soldiers_Percentage=Tanks_Percentage=Planes_Percentage=Ships_Percentage=rep(0,length(AAdata$member_id_list))
+nation_id=AAdata$member_id_list
+
+for (i in 1:length(AAdata$member_id_list))
+{
+	nationurl=paste0(baseurl,"nation/id=",nation_id[i],"/&key=",apikey)
+	nationdata=fromJSON(nationurl)
+	Name[i]=nationdata$name
+	Link[i]=paste0(baseurl2,nationdata$nationid)
+	if (Barracks==0 && sapply(nationdata$soldiers,as.numeric)==0)
+	{
+		Soldiers_Percentage[i]=0
+	}
+	else if (Barracks==0 && sapply(nationdata$soldiers,as.numeric)!=0)
+	{
+		Soldiers_Percentage[i]="OVERBUILT"
+	}
+	else
+	{
+		Soldiers_Percentage[i]=floor((100*sapply(nationdata$soldiers,as.numeric))/(3000*Barracks*nationdata$cities))
+	}
+	if (Factories==0 && sapply(nationdata$tanks,as.numeric)==0)
+	{
+		Tanks_Percentage[i]=0
+	}
+		else if (Barracks==0 && sapply(nationdata$tanks,as.numeric)!=0)
+	{
+		Tanks_Percentage[i]="OVERBUILT"
+	}
+	else
+	{
+		Tanks_Percentage[i]=floor((100*sapply(nationdata$tanks,as.numeric))/(250*Factories*nationdata$cities))
+	}
+	if (Hangars==0 && sapply(nationdata$aircraft,as.numeric)==0)
+	{
+		Planes_Percentage[i]=0
+	}
+	else if (Hangars==0 && sapply(nationdata$aircraft,as.numeric)!=0)
+	{
+		Planes_Percentage[i]="OVERBUILT"
+	}
+	else
+	{
+		Planes_Percentage[i]=floor((100*sapply(nationdata$aircraft,as.numeric))/(18*Hangars*nationdata$cities))
+	}
+	if (Shipyards==0 && sapply(nationdata$ships,as.numeric)==0)
+	{
+		Ships_Percentage[i]=0
+	}
+		else if (Shipyards==0 && sapply(nationdata$ships,as.numeric)!=0)
+	{
+		Ships_Percentage[i]="OVERBUILT"
+	}
+	else
+	{
+		Ships_Percentage[i]=floor((100*sapply(nationdata$ships,as.numeric))/(5*Shipyards*nationdata$cities))
+	}		
+}
+
+dataframe=data.frame(Name,Link,Soldiers_Percentage,Tanks_Percentage,Planes_Percentage,Ships_Percentage)
+#Insert the url of the workbook you wish to update and the name of the sheet in the workbook below
+#Use the gs4_create() function for creating a new workbook, the below function is for updating a prexisting workbook
+sheet_write(dataframe,"REPLACE WITH URL",sheet="REPLACE WITH SHEET NAME")
