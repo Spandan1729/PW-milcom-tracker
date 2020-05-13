@@ -46,4 +46,6 @@ for (i in 1:length(AAdata$member_id_list))
 }
 
 dataframe=data.frame(name,link,score,soldiers,tanks,planes,ships,status,low_range,high_range,attacker1,attacker2,attacker3)
-gs4_create(AAdata$name,sheets=dataframe)
+dataframe=dataframe[order(-score),]
+name=paste(AAdata$name,"Targets")
+gs4_create(name,sheets=dataframe)
