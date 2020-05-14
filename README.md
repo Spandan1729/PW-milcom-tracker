@@ -9,4 +9,6 @@ Alliance militarization tracker is meant to track the defcon (in %) of user's ow
 User needs to enter their api key, alliance id, and the defcon requirement to retrieve the data in the form of a google sheet.
 User should run code frequently to update the data, as the sheet isn't autoupdating.
 
+Resource production advisor looks into the market data and suggests the most profitable resources for you to produce in your nation.
+
 I am looking to decrease API calls in future updates.
