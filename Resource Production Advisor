@@ -1,0 +1,518 @@
+library('googlesheets4')
+library('jsonlite')
+baseurl="https://politicsandwar.com/api/"
+res=c("food","steel","aluminum","gasoline","munitions","coal","iron","bauxite","oil","lead","uranium")
+price=rep(0,length(res))
+#Insert the continent the nation is based in
+continent="All"
+#Insert the number of slots being dedicated to resource production
+res_slots=8
+
+#Insert API key
+api_key="KEY"
+
+for (i in 1:length(res))
+{
+	resurl=paste0(baseurl,"tradeprice/resource=",res[i],"&key=",api_key)
+	resdata=fromJSON(resurl)
+	price[i]=resdata$avgprice
+}
+price=sapply(price,as.numeric)
+
+#Insert food data like area of land available, number of farms, daily production etc
+land_area=3000
+food_number=20
+food_maintenance=300
+food_production=(land_area*12)/500
+Food=rep(0,food_number)
+for (i in 1:food_number)
+{
+	Food[i]=floor((((1+((i-1)/(2*(food_number-1))))*food_production*price[1])-food_maintenance))
+}
+
+#Insert parameters of production
+coal_number=10
+coal_maintenance=400
+coal_production=3
+Coal=rep(0,coal_number)
+for (i in 1:coal_number)
+{
+	Coal[i]=floor((((1+((i-1)/(2*(coal_number-1))))*coal_production*price[6])-coal_maintenance))
+}
+for (i in (coal_number+1):food_number)
+{
+	Coal[i]=NA
+}
+
+iron_number=10
+iron_maintenance=1600
+iron_production=3
+Iron=rep(0,iron_number)
+for (i in 1:iron_number)
+{
+	Iron[i]=floor((((1+((i-1)/(2*(coal_number-1))))*iron_production*price[7])-iron_maintenance))
+}
+for (i in (iron_number+1):food_number)
+{
+	Iron[i]=NA
+}
+
+bauxite_number=10
+bauxite_maintenance=1600
+bauxite_production=3
+Bauxite=rep(0,bauxite_number)
+for (i in 1:bauxite_number)
+{
+	Bauxite[i]=floor((((1+((i-1)/(2*(bauxite_number-1))))*bauxite_production*price[8])-bauxite_maintenance))
+}
+for (i in (bauxite_number+1):food_number)
+{
+	Bauxite[i]=NA
+}
+
+oil_number=10
+oil_maintenance=600
+oil_production=3
+Oil=rep(0,oil_number)
+for (i in 1:oil_number)
+{
+	Oil[i]=floor((((1+((i-1)/(2*(oil_number-1))))*oil_production*price[9])-oil_maintenance))
+}
+for (i in (oil_number+1):food_number)
+{
+	Oil[i]=NA
+}
+
+lead_number=10
+lead_maintenance=1500
+lead_production=3
+Lead=rep(0,lead_number)
+for (i in 1:lead_number)
+{
+	Lead[i]=floor((((1+((i-1)/(2*(lead_number-1))))*lead_production*price[10])-lead_maintenance))
+}
+for (i in (lead_number+1):food_number)
+{
+	Lead[i]=NA
+}
+
+uranium_number=5
+uranium_maintenance=5000
+uranium_production=3
+Uranium=rep(0,uranium_number)
+for (i in 1:uranium_number)
+{
+	Uranium[i]=floor((((1+((i-1)/(2*(uranium_number-1))))*uranium_production*price[11])-uranium_maintenance))
+}
+for (i in (uranium_number+1):food_number)
+{
+	Uranium[i]=NA
+}
+
+steel_number=5
+steel_maintenance=4000
+steel_production=9
+Steel=rep(0,steel_number)
+for (i in 1:steel_number)
+{
+	Steel[i]=floor((1+((i-1)/(2*(steel_number-1))))*(steel_production*(price[2]-((price[6]+price[7])/3))-steel_maintenance))
+}
+for (i in (steel_number+1):food_number)
+{
+	Steel[i]=NA
+}
+
+aluminum_number=5
+aluminum_maintenance=2500
+aluminum_production=9
+Aluminum=rep(0,aluminum_number)
+for (i in 1:aluminum_number)
+{
+	Aluminum[i]=floor((1+((i-1)/(2*(aluminum_number-1))))*(aluminum_production*(price[3]-(price[8]/3))-aluminum_maintenance))
+}
+for (i in (aluminum_number+1):food_number)
+{
+	Aluminum[i]=NA
+}
+
+munitions_number=5
+munitions_maintenance=2500
+munitions_production=9
+Munitions=rep(0,munitions_number)
+for (i in 1:munitions_number)
+{
+	Munitions[i]=floor((1+((i-1)/(2*(munitions_number-1))))*(munitions_production*(price[5]-(price[10]/3))-munitions_maintenance))
+}
+for (i in (munitions_number+1):food_number)
+{
+	Munitions[i]=NA
+}
+
+gasoline_number=5
+gasoline_maintenance=2500
+gasoline_production=9
+Gasoline=rep(0,gasoline_number)
+for (i in 1:gasoline_number)
+{
+	Gasoline[i]=floor((1+((i-1)/(2*(gasoline_number-1))))*(gasoline_production*(price[4]-(price[9]/3))-gasoline_maintenance))
+}
+for (i in (gasoline_number+1):food_number)
+{
+	Gasoline[i]=NA
+}
+
+Trade_list=data.frame(Food,Steel,Aluminum,Gasoline,Munitions,Coal,Iron,Bauxite,Oil,Lead,Uranium)
+
+#Insert data of which resource is absent in which continent
+{
+if (continent=="Asia")
+{
+	Trade_list$Coal=NULL
+	Trade_list$Bauxite=NULL
+	Trade_list$Lead=NULL
+}
+else if (continent=="Africa")
+{
+	Trade_list$Coal=NULL
+	Trade_list$Iron=NULL
+	Trade_list$Lead=NULL
+}
+else if (continent=="Europe")
+{
+	Trade_list$Oil=NULL
+	Trade_list$Bauxite=NULL
+	Trade_list$Uranium=NULL
+}
+else if (continent=="North America")
+{
+	Trade_list$Oil=NULL
+	Trade_list$Bauxite=NULL
+	Trade_list$Lead=NULL
+}
+else if (continent=="South America")
+{
+	Trade_list$Coal=NULL
+	Trade_list$Iron=NULL
+	Trade_list$Uranium=NULL
+}
+else if (continent=="Australia")
+{
+	Trade_list$Oil=NULL
+		Trade_list$Iron=NULL
+Trade_list$Uranium=NULL
+}
+else if (continent=="Antartica")
+{
+	Trade_list$Iron=NULL
+	Trade_list$Bauxite=NULL
+	Trade_list$Lead=NULL
+}
+else
+{
+	Trade_list=Trade_list
+}
+}
+
+Trade_list2=Trade_list
+message1=NULL
+message2=NULL
+message4=NULL
+message6=NULL
+
+{
+	while(res_slots!=0)
+	{
+
+		if (res_slots<=5)
+		{
+			preferred_res_price=max(Trade_list$Uranium[res_slots],Trade_list$Lead[res_slots],Trade_list$Oil[res_slots],Trade_list$Bauxite[res_slots],Trade_list$Iron[res_slots],Trade_list$Coal[res_slots],Trade_list$Munitions[res_slots],Trade_list$Gasoline[res_slots],Trade_list$Aluminum[res_slots],Trade_list$Steel[res_slots],Trade_list$Food[res_slots])
+			{		
+				if (preferred_res_price==Trade_list$Uranium[uranium_number])
+				{
+					slots_used_up=uranium_number
+					message6=paste("Build",uranium_number,"uranium units")
+				}
+				else if (preferred_res_price==Trade_list$Lead[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"lead units")
+				}
+				else if (preferred_res_price==Trade_list$Oil[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"oil units")
+				}
+				else if (preferred_res_price==Trade_list$Bauxite[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"bauxite units")
+				}
+				else if (preferred_res_price==Trade_list$Iron[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"iron units")
+				}
+				else if (preferred_res_price==Trade_list$Coal[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"coal units")
+				}
+				else if (preferred_res_price==Trade_list$Munitions[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"munitions units")
+				}
+				else if (preferred_res_price==Trade_list$Gasoline[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"gasoline units")
+				}
+				else if (preferred_res_price==Trade_list$Aluminum[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"aluminum units")
+				}
+				else if (preferred_res_price==Trade_list$Steel[res_slots])
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"steel units")
+				}
+				else
+				{
+					slots_used_up=res_slots
+					message6=paste("Build",res_slots,"food units")
+				}
+				res_slots=res_slots-slots_used_up
+			}
+		}
+
+		else if (res_slots<=10)
+		{
+			preferred_res_price=max(Trade_list$Uranium[uranium_number],Trade_list$Lead[res_slots],Trade_list$Oil[res_slots],Trade_list$Bauxite[res_slots],Trade_list$Iron[res_slots],Trade_list$Coal[res_slots],Trade_list$Munitions[munitions_number],Trade_list$Gasoline[gasoline_number],Trade_list$Aluminum[aluminum_number],Trade_list$Steel[steel_number],Trade_list$Food[res_slots])
+			{
+				if (preferred_res_price==Trade_list$Uranium[uranium_number])
+				{
+					slots_used_up=uranium_number
+					message4=paste("Build",uranium_number,"uranium units")
+					Trade_list$Uranium=0
+				}
+				else if (preferred_res_price==Trade_list$Lead[res_slots])
+				{
+					slots_used_up=res_slots
+					message4=paste("Build",res_slots,"lead units")
+				}
+				else if (preferred_res_price==Trade_list$Oil[res_slots])
+				{
+					slots_used_up=res_slots
+					message4=paste("Build",res_slots,"oil units")
+				}
+				else if (preferred_res_price==Trade_list$Bauxite[res_slots])
+				{
+					slots_used_up=bauxite_number
+					message4=paste("Build",bauxite_number,"bauxite units")
+				}
+				else if (preferred_res_price==Trade_list$Iron[res_slots])
+				{
+					slots_used_up=iron_number
+					message4=paste("Build",iron_number,"iron units")
+				}
+				else if (preferred_res_price==Trade_list$Coal[res_slots])
+				{
+					slots_used_up=res_slots
+					message4=paste("Build",res_slots,"coal units")
+				}
+				else if (preferred_res_price==Trade_list$Munitions[munitions_number])
+				{
+					slots_used_up=munitions_number
+					message4=paste("Build",munitions_number,"munitions units")
+					Trade_list$Munitions=0
+				}
+				else if (preferred_res_price==Trade_list$Gasoline[gasoline_number])
+				{
+					slots_used_up=gasoline_number
+					message4=paste("Build",gasoline_number,"gasoline units")
+					Trade_list$Gasoline=0
+				}
+				else if (preferred_res_price==Trade_list$Aluminum[aluminum_number])
+				{
+					slots_used_up=aluminum_number
+					message4=paste("Build",aluminum_number,"aluminum units")
+					Trade_list$Aluminum=0
+				}
+				else if (preferred_res_price==Trade_list$Steel[steel_number])
+				{
+					slots_used_up=steel_number
+					message4=paste("Build",steel_number,"steel units")
+					Trade_list$Steel=0
+				}
+				else
+				{
+					slots_used_up=res_slots
+					message4=paste("Build",res_slots,"food units")
+				}
+				res_slots=res_slots-slots_used_up
+			}
+		}
+		
+		else if (res_slots<=20)
+		{
+			preferred_res_price=max(Trade_list$Uranium[uranium_number],Trade_list$Lead[lead_number],Trade_list$Oil[oil_number],Trade_list$Bauxite[bauxite_number],Trade_list$Iron[iron_number],Trade_list$Coal[coal_number],Trade_list$Munitions[munitions_number],Trade_list$Gasoline[gasoline_number],Trade_list$Aluminum[aluminum_number],Trade_list$Steel[steel_number],Trade_list$Food[res_slots])
+			{
+				if (preferred_res_price==Trade_list$Uranium[uranium_number])
+				{
+					slots_used_up=uranium_number
+					message2=paste("Build",uranium_number,"uranium units")
+					Trade_list$Uranium=0
+				}
+				else if (preferred_res_price==Trade_list$Lead[lead_number])
+				{
+					slots_used_up=lead_number
+					message2=paste("Build",lead_number,"lead units")
+					Trade_list$Lead=0
+				}
+				else if (preferred_res_price==Trade_list$Oil[oil_number])
+				{
+					slots_used_up=oil_number
+					message2=paste("Build",oil_number,"oil units")
+					Trade_list$Oil=0
+				}
+				else if (preferred_res_price==Trade_list$Bauxite[bauxite_number])
+				{
+					slots_used_up=bauxite_number
+					message2=paste("Build",bauxite_number,"bauxite units")
+					Trade_list$Bauxite=0
+				}
+				else if (preferred_res_price==Trade_list$Iron[iron_number])
+				{
+					slots_used_up=iron_number
+					message2=paste("Build",iron_number,"iron units")
+					Trade_list$Iron=0
+				}
+				else if (preferred_res_price==Trade_list$Coal[coal_number])
+				{
+					slots_used_up=coal_number
+					message2=paste("Build",coal_number,"coal units")
+					Trade_list$Coal=0
+				}
+				else if (preferred_res_price==Trade_list$Munitions[munitions_number])
+				{
+					slots_used_up=munitions_number
+					message2=paste("Build",munitions_number,"munitions units")
+					Trade_list$Munitions=0
+				}
+				else if (preferred_res_price==Trade_list$Gasoline[gasoline_number])
+				{
+					slots_used_up=gasoline_number
+					message2=paste("Build",gasoline_number,"gasoline units")
+					Trade_list$Gasoline=0
+				}
+				else if (preferred_res_price==Trade_list$Aluminum[aluminum_number])
+				{
+					slots_used_up=aluminum_number
+					message2=paste("Build",aluminum_number,"aluminum units")
+					Trade_list$Aluminum=0
+				}
+				else if (preferred_res_price==Trade_list$Steel[steel_number])
+				{
+					slots_used_up=steel_number
+					message2=paste("Build",steel_number,"steel units")
+					Trade_list$Steel=0
+				}
+				else
+				{
+					slots_used_up=res_slots
+					message2=paste("Build",res_slots,"food units")
+				}
+				res_slots=res_slots-slots_used_up
+			}
+		}
+		else
+		{
+			preferred_res_price=max(Trade_list$Uranium[uranium_number],Trade_list$Lead[lead_number],Trade_list$Oil[oil_number],Trade_list$Bauxite[bauxite_number],Trade_list$Iron[iron_number],Trade_list$Coal[coal_number],Trade_list$Munitions[munitions_number],Trade_list$Gasoline[gasoline_number],Trade_list$Aluminum[aluminum_number],Trade_list$Steel[steel_number],Trade_list$Food[food_number])
+			{
+				if (preferred_res_price==Trade_list$Uranium[uranium_number])
+				{
+					slots_used_up=uranium_number
+					message1=paste("Build",uranium_number,"uranium units")
+					Trade_list$Uranium=0
+				}
+				else if (preferred_res_price==Trade_list$Lead[lead_number])
+				{
+					slots_used_up=lead_number
+					message1=paste("Build",lead_number,"lead units")
+					Trade_list$Lead=0
+				}
+				else if (preferred_res_price==Trade_list$Oil[oil_number])
+				{
+					slots_used_up=oil_number
+					message1=paste("Build",oil_number,"oil units")
+					Trade_list$Oil=0
+				}
+				else if (preferred_res_price==Trade_list$Bauxite[bauxite_number])
+				{
+					slots_used_up=bauxite_number
+					message1=paste("Build",bauxite_number,"bauxite units")
+					Trade_list$Bauxite=0
+				}
+				else if (preferred_res_price==Trade_list$Iron[iron_number])
+				{
+					slots_used_up=iron_number
+					message1=paste("Build",iron_number,"iron units")
+					Trade_list$Iron=0
+				}
+				else if (preferred_res_price==Trade_list$Coal[coal_number])
+				{
+					slots_used_up=coal_number
+					message1=paste("Build",coal_number,"coal units")
+					Trade_list$Coal=0
+				}
+				else if (preferred_res_price==Trade_list$Munitions[munitions_number])
+				{
+					slots_used_up=munitions_number
+					message1=paste("Build",munitions_number,"munitions units")
+					Trade_list$Munitions=0
+				}
+				else if (preferred_res_price==Trade_list$Gasoline[gasoline_number])
+				{
+					slots_used_up=gasoline_number
+					message1=paste("Build",gasoline_number,"gasoline units")
+					Trade_list$Gasoline=0
+				}
+				else if (preferred_res_price==Trade_list$Aluminum[aluminum_number])
+				{
+					slots_used_up=aluminum_number
+					message1=paste("Build",aluminum_number,"aluminum units")
+					Trade_list$Aluminum=0
+				}
+				else if (preferred_res_price==Trade_list$Steel[steel_number])
+				{
+					slots_used_up=steel_number
+					message1=paste("Build",steel_number,"steel units")
+					Trade_list$Steel=0
+				}
+				else
+				{
+					slots_used_up=food_number
+					message1=paste("Build",food_number,"food units")
+					Trade_list$Food=0
+				}
+				res_slots=res_slots-slots_used_up
+			}
+		}
+	}
+}
+
+message1
+message2
+message4
+message6
+Advice=rep("NA",food_number)
+Advice[1]=message1
+Advice[2]=message2
+Advice[3]=message4
+Advice[4]=message6
+Trade_list2=cbind(Trade_list2,Advice)
+
+#Insert target Google sheet URL
+#In case of initial run, use the gs4_create() command to create a new sheet
+sheet_write(Trade_list2,"URL",sheet="Trade_list")
