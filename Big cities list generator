@@ -1,0 +1,44 @@
+library('googlesheets4')
+library('jsonlite')
+baseurl='http://politicsandwar.com/api/'
+baseurl2='https://politicsandwar.com/nation/id='
+#insert API key below
+apikey=
+
+citiesurl= paste0(baseurl,"all-cities/key=",apikey)
+citiesdata=fromJSON(citiesurl)
+data=citiesdata$all_cities
+j=0
+target_city_infra=target_city_name=target_nation_link=score=alliance=nationurl=nationdata=rep(0,length(data$nation_id))
+
+for (i in 1:length(data$nation_id))
+{
+	if (sapply(data$infrastructure[i],as.numeric)>=3000)
+	{
+		j=j+1
+		target_city_infra[j]=data$infrastructure[i]
+		target_city_name[j]=data$city_name[i]
+		target_nation_link[j]=paste0(baseurl2,data$nation_id[i])
+		nationurl=paste0(baseurl,"nation/id=",data$nation_id[i],"/&key=",apikey)
+		nationdata=fromJSON(nationurl)
+		score[j]=nationdata$score
+		alliance[j]=nationdata$alliance
+	}
+}
+
+City_Infra=City_Name=Nation_Link=Score=Alliance=rep(0,j)
+
+for (i in 1:j)
+{
+	City_Infra[i]= target_city_infra[i]
+	City_Name[i]= target_city_name[i]
+	Nation_Link[i]= target_nation_link[i]
+	Score[i]=score[i]
+	Alliance[i]=alliance[i]
+}
+
+City_Infra=sapply(City_Infra,as.numeric)
+Score=sapply(Score,as.numeric)
+dataframe=data.frame(City_Infra,City_Name,Nation_Link,Score,Alliance)
+Sheet1=dataframe
+gs4_create("Big Cities Sheet",sheets=Sheet1)
